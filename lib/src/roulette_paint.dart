@@ -1,11 +1,11 @@
+import 'dart:math';
+import 'dart:ui' as ui;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:roulette/roulette.dart';
+import 'package:roulette/utils/rotated_text.dart';
 import 'package:roulette/utils/transform_entry.dart';
-import 'package:roulette/utils/text.dart';
-
-import 'dart:math';
-import 'dart:ui' as ui;
 
 /// Animated roulette core by [AnimatedWidget]
 class RoulettePaint extends AnimatedWidget {
@@ -205,24 +205,27 @@ class _RoulettePainter extends CustomPainter {
           ? unitTextStyle
           : unitTextStyle.copyWith(fontFamily: icon.fontFamily);
 
-      // Calculates chord of circle.
-      final chord = 2 * (radius * style.textLayoutBias) * sin(sweep / 2);
-
-      // Creates a builder for the paragraph that will be drawn on the canvas.
-      final pb = ui.ParagraphBuilder(ui.ParagraphStyle(
-        textAlign: TextAlign.center,
-      ))
-        ..pushStyle(textStyle.asUiTextStyle())
-        ..addText(text);
-
       // Creates the paragraph.
-      final paragraph = pb.build();
-      paragraph.layout(ui.ParagraphConstraints(width: chord));
+      final textPainter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: textStyle,
+        ),
+        maxLines: 1,
+        ellipsis: '...',
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+
+      textPainter.layout(maxWidth: radius - style.textLayoutBias);
 
       // Draws the paragraph.
-      canvas.drawParagraph(
-        paragraph,
-        Offset(-chord / 2, -radius * style.textLayoutBias),
+      canvas.drawRotatedText(
+        pivot: Offset(0, -style.textLayoutBias),
+        textPainter: textPainter,
+        isInDegrees: true,
+        angle: -90,
+        alignment: Alignment.centerRight,
       );
 
       canvas.restore();
